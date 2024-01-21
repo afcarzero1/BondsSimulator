@@ -2,13 +2,15 @@ from abc import ABC, abstractmethod
 
 
 class Activity(ABC):
-    def __init__(self, current_period: int):
+    def __init__(self, current_period: int = 0):
         self.current_period = current_period
 
         self.profit_history = []
         self.valuation_history = []
 
-    @abstractmethod
+        self._current_valuation = None
+        self._current_profit = None
+
     def profit(self) -> float:
         """
         Obtain profit of current period of this activity
@@ -16,9 +18,11 @@ class Activity(ABC):
         Returns:
             The profit (or loss) from this activity
         """
-        pass
+        if self._current_profit is None:
+            raise ValueError("You must call step before having a profit.")
 
-    @abstractmethod
+        return self._current_profit
+
     def valuation(self) -> float:
         """
         Obtains the value of this asset in the current period.
@@ -26,12 +30,13 @@ class Activity(ABC):
         Returns:
             The total valuation (or liability) of this activity.
         """
-        pass
+        return self._current_valuation
 
     @abstractmethod
-    def _step(self, *args, **kwargs):
+    def _step(self, *args, **kwargs) -> tuple[float, float]:
         """
-        Move one month forward in time
+        Advance one period in time
+
         Args:
             *args:
             **kwargs:
@@ -42,11 +47,11 @@ class Activity(ABC):
         pass
 
     def step(self, *args, **kwargs):
-        # Take the step with the
-        self._step(*args, **kwargs)
+        # Take the step with the backend
+        self._current_profit, self._current_valuation = self._step(*args, **kwargs)
 
-        self.valuation_history.append(self.valuation())
-        self.profit_history.append(self.profit())
+        self.valuation_history.append(self._current_valuation)
+        self.profit_history.append(self._current_profit)
 
     def reset(self):
         self.valuation_history = []
