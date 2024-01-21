@@ -53,8 +53,13 @@ class Activity(ABC):
         self.valuation_history.append(self._current_valuation)
         self.profit_history.append(self._current_profit)
 
+        self.current_period += 1
+
     def reset(self):
         self.valuation_history = []
         self.profit_history = []
 
         self.current_period = 0
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}:{self._current_valuation}"

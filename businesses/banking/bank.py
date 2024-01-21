@@ -13,8 +13,8 @@ class BankLoan(Activity):
         """
 
         Args:
-            loan_value: The initial amount of the loan
-            annual_interest_rate:
+            loan_value: The initial amount of the loan.
+            annual_interest_rate: The annual interest rate of the loan.
             loan_duration: Duration of the loan in months
             **kwargs:
         """
@@ -80,3 +80,45 @@ class BankLoan(Activity):
         super().reset()
         self.interest_payments = []
         self.remaining_principal = self.loan_value
+
+
+class BankCD(Activity):
+    """
+    This is a certificate of deposit to a fixed term.
+    """
+
+    def __init__(
+        self, number_periods: int, value: float, annual_interest_rate: float, **kwargs
+    ):
+        super().__init__(**kwargs)
+
+        self.number_periods = number_periods
+        self.annual_interest_rate = annual_interest_rate
+        self.value = value
+        self._current_valuation = self.value
+
+    def _step(self) -> tuple[float, float]:
+        # The current period is "delayed"
+        if self.current_period < self.number_periods - 1:
+            return 0, self.value
+        elif self.current_period == self.number_periods - 1:
+            return (
+                self.value
+                + self.value * (self.annual_interest_rate * self.number_periods / 12),
+                0,
+            )
+        else:
+            return 0, 0
+
+
+class BankSavings(Activity):
+    def __init__(self, amount: float):
+        super().__init__()
+        self.amount = amount
+        self._current_valuation = amount
+
+    def _step(self, extraction: float) -> tuple[float, float]:
+        if extraction > self.amount:
+            raise ValueError("Attempted to take more money than available")
+        self.amount -= extraction
+        return extraction, self.amount

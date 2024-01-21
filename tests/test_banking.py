@@ -1,6 +1,7 @@
 import math
 import unittest
 from businesses import BankLoan
+from businesses.banking.bank import BankCD
 
 
 def calculate_new_payment(remaining_principal, annual_interest_rate, remaining_periods):
@@ -111,3 +112,20 @@ class TestLoan(unittest.TestCase):
 
         # Final assertions
         self.assertAlmostEqual(loan.valuation(), 0, places=2)
+
+
+class TestCD(unittest.TestCase):
+    def test_single_cd(self):
+        initial_value = 10_000
+        rate = 0.15
+        months = 12
+
+        cd = BankCD(
+            number_periods=months, value=initial_value, annual_interest_rate=rate
+        )
+
+        for i in range(months):
+            cd.step()
+
+        self.assertEqual(sum(cd.profit_history), initial_value + initial_value * rate)
+        self.assertEqual(cd.profit(), initial_value + initial_value * rate)
